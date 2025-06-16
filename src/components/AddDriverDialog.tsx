@@ -11,6 +11,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import type { Database } from "@/integrations/supabase/types";
+
+type PlatformType = Database["public"]["Enums"]["platform_type"];
 
 interface AddDriverDialogProps {
   initialVehicleNumber?: string;
@@ -22,7 +25,7 @@ const AddDriverDialog = ({ initialVehicleNumber = "", initialPlatform = "" }: Ad
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     vehicleNumber: initialVehicleNumber,
-    platform: initialPlatform,
+    platform: initialPlatform as PlatformType | "",
     driverName: "",
     phoneNumber: "",
     totalRides: "",
@@ -61,7 +64,7 @@ const AddDriverDialog = ({ initialVehicleNumber = "", initialPlatform = "" }: Ad
         .from("drivers")
         .insert({
           vehicle_number: formData.vehicleNumber.toUpperCase(),
-          platform: formData.platform,
+          platform: formData.platform as PlatformType,
           driver_name: formData.driverName || null,
           phone_number: formData.phoneNumber || null,
           total_rides: formData.totalRides ? parseInt(formData.totalRides) : 0,
@@ -146,7 +149,7 @@ const AddDriverDialog = ({ initialVehicleNumber = "", initialPlatform = "" }: Ad
             <Label htmlFor="platform">Platform *</Label>
             <Select 
               value={formData.platform} 
-              onValueChange={(value) => setFormData({ ...formData, platform: value })}
+              onValueChange={(value) => setFormData({ ...formData, platform: value as PlatformType })}
               required
             >
               <SelectTrigger className="bg-gray-800 border-gray-700 text-white">

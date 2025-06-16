@@ -9,10 +9,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import DriverCard from "./DriverCard";
 import AddDriverDialog from "./AddDriverDialog";
+import type { Database } from "@/integrations/supabase/types";
+
+type PlatformType = Database["public"]["Enums"]["platform_type"];
 
 const SearchSection = () => {
   const [vehicleNumber, setVehicleNumber] = useState("");
-  const [selectedPlatform, setSelectedPlatform] = useState("");
+  const [selectedPlatform, setSelectedPlatform] = useState<PlatformType | "">("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
@@ -97,12 +100,12 @@ const SearchSection = () => {
                   />
                 </div>
                 <div className="md:w-48">
-                  <Select value={selectedPlatform} onValueChange={setSelectedPlatform}>
+                  <Select value={selectedPlatform} onValueChange={(value) => setSelectedPlatform(value as PlatformType | "")}>
                     <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
                       <SelectValue placeholder="All Platforms" />
                     </SelectTrigger>
                     <SelectContent className="bg-gray-700 border-gray-600">
-                      <SelectItem value="">All Platforms</SelectItem>
+                      <SelectItem value="all">All Platforms</SelectItem>
                       <SelectItem value="ola">Ola</SelectItem>
                       <SelectItem value="uber">Uber</SelectItem>
                       <SelectItem value="rapido">Rapido</SelectItem>
@@ -145,7 +148,7 @@ const SearchSection = () => {
                   </p>
                   <AddDriverDialog 
                     initialVehicleNumber={vehicleNumber}
-                    initialPlatform={selectedPlatform}
+                    initialPlatform={selectedPlatform === "all" ? "" : selectedPlatform}
                   />
                 </div>
               )}
