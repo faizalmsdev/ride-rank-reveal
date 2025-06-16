@@ -9,7 +9,125 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      drivers: {
+        Row: {
+          average_rating: number | null
+          contributed_by: string | null
+          created_at: string | null
+          driver_name: string | null
+          id: string
+          is_multiple_platform: boolean | null
+          phone_number: string | null
+          platform: Database["public"]["Enums"]["platform_type"]
+          total_rides: number | null
+          updated_at: string | null
+          vehicle_number: string
+        }
+        Insert: {
+          average_rating?: number | null
+          contributed_by?: string | null
+          created_at?: string | null
+          driver_name?: string | null
+          id?: string
+          is_multiple_platform?: boolean | null
+          phone_number?: string | null
+          platform: Database["public"]["Enums"]["platform_type"]
+          total_rides?: number | null
+          updated_at?: string | null
+          vehicle_number: string
+        }
+        Update: {
+          average_rating?: number | null
+          contributed_by?: string | null
+          created_at?: string | null
+          driver_name?: string | null
+          id?: string
+          is_multiple_platform?: boolean | null
+          phone_number?: string | null
+          platform?: Database["public"]["Enums"]["platform_type"]
+          total_rides?: number | null
+          updated_at?: string | null
+          vehicle_number?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "drivers_contributed_by_fkey"
+            columns: ["contributed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          contribution_score: number | null
+          created_at: string | null
+          email: string
+          id: string
+          username: string | null
+        }
+        Insert: {
+          contribution_score?: number | null
+          created_at?: string | null
+          email: string
+          id: string
+          username?: string | null
+        }
+        Update: {
+          contribution_score?: number | null
+          created_at?: string | null
+          email?: string
+          id?: string
+          username?: string | null
+        }
+        Relationships: []
+      }
+      reviews: {
+        Row: {
+          created_at: string | null
+          driver_id: string
+          id: string
+          rating: number
+          review_text: string | null
+          reviewer_id: string
+          ride_date: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          driver_id: string
+          id?: string
+          rating: number
+          review_text?: string | null
+          reviewer_id: string
+          ride_date?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          driver_id?: string
+          id?: string
+          rating?: number
+          review_text?: string | null
+          reviewer_id?: string
+          ride_date?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -18,7 +136,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      platform_type: "ola" | "uber" | "rapido" | "namma_yatri"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -133,6 +251,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      platform_type: ["ola", "uber", "rapido", "namma_yatri"],
+    },
   },
 } as const
