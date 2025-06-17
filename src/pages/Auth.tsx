@@ -8,31 +8,44 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
-import { User } from "@supabase/supabase-js";
+import { User, Session } from "@supabase/supabase-js";
 
 const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [initialLoading, setInitialLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check if user is already logged in
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        setUser(session.user);
-        navigate("/");
-      }
-    });
-
+    // Set up auth state listener first
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log("Auth state changed:", session?.user?.email);
+      setSession(session);
+      setUser(session?.user ?? null);
+      
       if (session?.user) {
-        setUser(session.user);
+        console.log("User is authenticated, redirecting to home");
         navigate("/");
       }
+      setInitialLoading(false);
+    });
+
+    // Then check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log("Initial session check:", session?.user?.email);
+      setSession(session);
+      setUser(session?.user ?? null);
+      
+      if (session?.user) {
+        console.log("Found existing session, redirecting to home");
+        navigate("/");
+      }
+      setInitialLoading(false);
     });
 
     return () => subscription.unsubscribe();
@@ -50,14 +63,16 @@ const Auth = () => {
 
       if (error) throw error;
 
-      if (data.user) {
+      if (data.user && data.session) {
+        console.log("Sign in successful:", data.user.email);
         toast({
           title: "Welcome back!",
           description: "Successfully signed in.",
         });
-        navigate("/");
+        // The onAuthStateChange will handle the redirect
       }
     } catch (error: any) {
+      console.error("Sign in error:", error);
       toast({
         title: "Error",
         description: error.message,
@@ -83,11 +98,13 @@ const Auth = () => {
 
       if (error) throw error;
 
+      console.log("Sign up result:", data);
       toast({
         title: "Account created!",
         description: "Please check your email to verify your account.",
       });
     } catch (error: any) {
+      console.error("Sign up error:", error);
       toast({
         title: "Error",
         description: error.message,
@@ -97,6 +114,15 @@ const Auth = () => {
       setLoading(false);
     }
   };
+
+  // Show loading spinner while checking for existing session
+  if (initialLoading) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-yellow-400"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-black flex items-center justify-center p-4">
