@@ -15,7 +15,7 @@ type PlatformType = Database["public"]["Enums"]["platform_type"];
 
 const SearchSection = () => {
   const [vehicleNumber, setVehicleNumber] = useState("");
-  const [selectedPlatform, setSelectedPlatform] = useState<PlatformType | "">("");
+  const [selectedPlatform, setSelectedPlatform] = useState<string>("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
@@ -43,7 +43,7 @@ const SearchSection = () => {
         `)
         .eq("vehicle_number", vehicleNumber.toUpperCase());
 
-      if (selectedPlatform) {
+      if (selectedPlatform && selectedPlatform !== "all") {
         query = query.eq("platform", selectedPlatform);
       }
 
@@ -100,7 +100,7 @@ const SearchSection = () => {
                   />
                 </div>
                 <div className="md:w-48">
-                  <Select value={selectedPlatform} onValueChange={(value) => setSelectedPlatform(value as PlatformType | "")}>
+                  <Select value={selectedPlatform} onValueChange={setSelectedPlatform}>
                     <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
                       <SelectValue placeholder="All Platforms" />
                     </SelectTrigger>
@@ -144,12 +144,18 @@ const SearchSection = () => {
                   <h4 className="text-xl font-semibold text-white mb-2">No Data Available</h4>
                   <p className="text-gray-400 mb-6">
                     No information found for vehicle number "{vehicleNumber}".
-                    Help the community by adding this driver's information!
+                    Help the community by adding this driver's information or sharing your experience!
                   </p>
-                  <AddDriverDialog 
-                    initialVehicleNumber={vehicleNumber}
-                    initialPlatform={selectedPlatform === "all" ? "" : selectedPlatform}
-                  />
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                    <AddDriverDialog 
+                      initialVehicleNumber={vehicleNumber}
+                      initialPlatform={selectedPlatform === "all" ? "" : selectedPlatform}
+                    />
+                    <QuickReviewDialog 
+                      vehicleNumber={vehicleNumber}
+                      platform={selectedPlatform === "all" ? "" : selectedPlatform}
+                    />
+                  </div>
                 </div>
               )}
             </div>
