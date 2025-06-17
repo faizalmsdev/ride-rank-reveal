@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import DriverCard from "./DriverCard";
 import AddDriverDialog from "./AddDriverDialog";
+import QuickReviewDialog from "./QuickReviewDialog";
 import type { Database } from "@/integrations/supabase/types";
 
 type PlatformType = Database["public"]["Enums"]["platform_type"];
@@ -44,7 +45,7 @@ const SearchSection = () => {
         .eq("vehicle_number", vehicleNumber.toUpperCase());
 
       if (selectedPlatform && selectedPlatform !== "all") {
-        query = query.eq("platform", selectedPlatform);
+        query = query.eq("platform", selectedPlatform as PlatformType);
       }
 
       const { data, error } = await query;

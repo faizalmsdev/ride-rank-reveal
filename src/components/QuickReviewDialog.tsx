@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Star, MessageSquare, Plus } from "lucide-react";
+import { Star, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -69,7 +69,7 @@ const QuickReviewDialog = ({ vehicleNumber, platform }: QuickReviewDialogProps) 
         .from("drivers")
         .select("id")
         .eq("vehicle_number", vehicleNumber.toUpperCase())
-        .eq("platform", selectedPlatform)
+        .eq("platform", selectedPlatform as PlatformType)
         .single();
 
       let driverId;
