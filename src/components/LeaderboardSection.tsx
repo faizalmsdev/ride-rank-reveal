@@ -214,7 +214,7 @@ const LeaderboardSection = () => {
           </Card>
         </div>
       </div>
-    </div>
+    </section>
   );
 };
 
