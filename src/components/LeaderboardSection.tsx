@@ -86,7 +86,26 @@ const LeaderboardSection = () => {
   };
 
   const handleProfileClick = (userId: string) => {
-    navigate(`/profile/${userId}`);
+    if (!userId) {
+      console.error("No user ID provided");
+      return;
+    }
+    
+    try {
+      navigate(`/profile/${userId}`);
+    } catch (error) {
+      console.error("Error navigating to profile:", error);
+    }
+  };
+
+  const getDisplayName = (contributor: any) => {
+    if (contributor.username && contributor.username.trim()) {
+      return contributor.username;
+    }
+    if (contributor.email) {
+      return contributor.email.split('@')[0];
+    }
+    return "Anonymous User";
   };
 
   if (loading) {
@@ -139,7 +158,7 @@ const LeaderboardSection = () => {
                             className="text-white font-medium hover:text-yellow-400 p-0 h-auto"
                             onClick={() => handleProfileClick(contributor.id)}
                           >
-                            {contributor.username || contributor.email?.split('@')[0] || "Anonymous"}
+                            {getDisplayName(contributor)}
                           </Button>
                           <div className="text-gray-400 text-sm">
                             {contributor.driversAdded} drivers added

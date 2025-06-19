@@ -26,10 +26,25 @@ const Profile = () => {
       setCurrentUser(user);
     });
 
-    fetchProfile();
-  }, [userId]);
+    if (userId) {
+      fetchProfile();
+    } else {
+      setLoading(false);
+      toast({
+        title: "Error",
+        description: "Invalid profile URL",
+        variant: "destructive",
+      });
+      navigate("/");
+    }
+  }, [userId, navigate]);
 
   const fetchProfile = async () => {
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
+
     try {
       // Fetch profile data
       const { data: profileData, error: profileError } = await supabase
@@ -50,7 +65,7 @@ const Profile = () => {
       }
 
       setProfile(profileData);
-      setNewUsername(profileData.username || "");
+      setNewUsername(profileData.username || profileData.email?.split('@')[0] || "");
 
       // Fetch drivers added by this user
       const { data: driversData, error: driversError } = await supabase
@@ -72,6 +87,12 @@ const Profile = () => {
       }
     } catch (error) {
       console.error("Error fetching profile:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load profile",
+        variant: "destructive",
+      });
+      navigate("/");
     } finally {
       setLoading(false);
     }
@@ -87,11 +108,20 @@ const Profile = () => {
       return;
     }
 
+    if (!currentUser?.id) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to update your profile",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from("profiles")
         .update({ username: newUsername.trim() })
-        .eq("id", currentUser?.id);
+        .eq("id", currentUser.id);
 
       if (error) throw error;
 
@@ -121,6 +151,16 @@ const Profile = () => {
     return names[platform as keyof typeof names] || platform;
   };
 
+  const getDisplayName = (profile: any) => {
+    if (profile.username && profile.username.trim()) {
+      return profile.username;
+    }
+    if (profile.email) {
+      return profile.email.split('@')[0];
+    }
+    return "Anonymous User";
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
@@ -134,6 +174,7 @@ const Profile = () => {
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="text-white text-center">
           <h2 className="text-2xl font-bold mb-2">Profile not found</h2>
+          <p className="text-gray-400 mb-4">The profile you're looking for doesn't exist or has been removed.</p>
           <Button onClick={() => navigate("/")} className="bg-yellow-400 text-black">
             Go Home
           </Button>
@@ -200,13 +241,13 @@ const Profile = () => {
                   </div>
                 ) : (
                   <div className="text-white font-medium mt-1">
-                    {profile.username || "No username set"}
+                    {getDisplayName(profile)}
                   </div>
                 )}
               </div>
               <div>
                 <Label className="text-gray-300">Email</Label>
-                <div className="text-white mt-1">{profile.email}</div>
+                <div className="text-white mt-1">{profile.email || "Email not available"}</div>
               </div>
               <div>
                 <Label className="text-gray-300">Contribution Score</Label>
@@ -217,7 +258,7 @@ const Profile = () => {
               <div>
                 <Label className="text-gray-300">Member Since</Label>
                 <div className="text-white mt-1">
-                  {new Date(profile.created_at).toLocaleDateString()}
+                  {profile.created_at ? new Date(profile.created_at).toLocaleDateString() : "Date not available"}
                 </div>
               </div>
             </CardContent>
@@ -254,7 +295,7 @@ const Profile = () => {
                           {driver.average_rating ? `${driver.average_rating.toFixed(1)} ⭐` : "No rating"}
                         </Badge>
                         <div className="text-gray-400 text-xs mt-1">
-                          Added {new Date(driver.created_at).toLocaleDateString()}
+                          Added {driver.created_at ? new Date(driver.created_at).toLocaleDateString() : "Unknown date"}
                         </div>
                       </div>
                     </div>
