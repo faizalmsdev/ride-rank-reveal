@@ -9,11 +9,13 @@ import SearchSection from "@/components/SearchSection";
 import LeaderboardSection from "@/components/LeaderboardSection";
 import HeroSection from "@/components/HeroSection";
 import StatsSection from "@/components/StatsSection";
+import ProfileCustomizer from "@/components/ProfileCustomizer";
 
 const Index = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [userProfile, setUserProfile] = useState<any>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -24,6 +26,15 @@ const Index = () => {
       console.log("Index - Auth state changed:", session?.user?.email);
       setSession(session);
       setUser(session?.user ?? null);
+      
+      if (session?.user) {
+        // Fetch user profile when authenticated
+        setTimeout(() => {
+          fetchUserProfile(session.user.id);
+        }, 0);
+      } else {
+        setUserProfile(null);
+      }
       setLoading(false);
     });
 
@@ -32,20 +43,47 @@ const Index = () => {
       console.log("Index - Initial session check:", session?.user?.email);
       setSession(session);
       setUser(session?.user ?? null);
+      
+      if (session?.user) {
+        fetchUserProfile(session.user.id);
+      }
       setLoading(false);
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
+  const fetchUserProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", userId)
+        .single();
+
+      if (!error && data) {
+        setUserProfile(data);
+      }
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+    }
+  };
+
   const handleSignOut = async () => {
     console.log("Signing out user");
     try {
       await supabase.auth.signOut();
       console.log("Sign out successful");
+      setUserProfile(null);
       navigate("/");
     } catch (error) {
       console.error("Sign out error:", error);
+    }
+  };
+
+  const handleUsernameUpdate = (newUsername: string) => {
+    if (userProfile) {
+      setUserProfile({ ...userProfile, username: newUsername });
     }
   };
 
@@ -74,7 +112,10 @@ const Index = () => {
           <div className="flex items-center space-x-4">
             {user ? (
               <>
-                <span className="text-black font-medium">Welcome, {user.email}</span>
+                <ProfileCustomizer 
+                  user={user} 
+                  onUsernameUpdate={handleUsernameUpdate}
+                />
                 <Button 
                   onClick={handleSignOut}
                   variant="outline"

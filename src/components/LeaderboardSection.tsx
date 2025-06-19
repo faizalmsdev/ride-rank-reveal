@@ -3,12 +3,15 @@ import { useEffect, useState } from "react";
 import { Trophy, Star, Award } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 
 const LeaderboardSection = () => {
   const [topContributors, setTopContributors] = useState<any[]>([]);
   const [topDrivers, setTopDrivers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchLeaderboardData = async () => {
@@ -17,7 +20,9 @@ const LeaderboardSection = () => {
         const { data: contributorsData } = await supabase
           .from("profiles")
           .select(`
+            id,
             username,
+            email,
             contribution_score,
             drivers!drivers_contributed_by_fkey (id)
           `)
@@ -80,6 +85,10 @@ const LeaderboardSection = () => {
     ));
   };
 
+  const handleProfileClick = (userId: string) => {
+    navigate(`/profile/${userId}`);
+  };
+
   if (loading) {
     return (
       <section className="py-16 bg-gray-900">
@@ -112,7 +121,7 @@ const LeaderboardSection = () => {
                 <div className="space-y-3">
                   {topContributors.map((contributor, index) => (
                     <div
-                      key={contributor.username}
+                      key={contributor.id}
                       className="flex items-center justify-between p-3 bg-gray-700 rounded-lg"
                     >
                       <div className="flex items-center gap-3">
@@ -125,9 +134,13 @@ const LeaderboardSection = () => {
                           {index + 1}
                         </div>
                         <div>
-                          <div className="text-white font-medium">
-                            {contributor.username || "Anonymous"}
-                          </div>
+                          <Button
+                            variant="ghost"
+                            className="text-white font-medium hover:text-yellow-400 p-0 h-auto"
+                            onClick={() => handleProfileClick(contributor.id)}
+                          >
+                            {contributor.username || contributor.email?.split('@')[0] || "Anonymous"}
+                          </Button>
                           <div className="text-gray-400 text-sm">
                             {contributor.driversAdded} drivers added
                           </div>
@@ -201,7 +214,7 @@ const LeaderboardSection = () => {
           </Card>
         </div>
       </div>
-    </section>
+    </div>
   );
 };
 
